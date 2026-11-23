@@ -12,7 +12,6 @@
   "item.create_jetpack.jetpack.tooltip.control3": "Press [G]",
   "item.create_jetpack.jetpack.tooltip.control4": "Press [H]",
   "item.create_jetpack.jetpack.tooltip.summary": "Allows levitation using pressurized air",
-  "item.create_jetpack.jetpack_placeable": "Jetpack Placeable",
   "item.create_jetpack.netherite_jetpack": "Netherite Jetpack",
   "item.create_jetpack.netherite_jetpack.tooltip": "",
   "item.create_jetpack.netherite_jetpack.tooltip.action1": "Fly upwards",
@@ -24,6 +23,5 @@
   "item.create_jetpack.netherite_jetpack.tooltip.control3": "Press [G]",
   "item.create_jetpack.netherite_jetpack.tooltip.control4": "Press [H]",
   "item.create_jetpack.netherite_jetpack.tooltip.summary": "Allows levitation using pressurized air",
-  "item.create_jetpack.netherite_jetpack_placeable": "Netherite Jetpack Placeable",
-  "key.categories.movement.jetpack": "Create Jetpack"
+  "key.category.flightlib.jetpack": "Create Jetpack"
 }

@@ -7,34 +7,24 @@ import com.possible_triangle.flightlib.api.IJetpack
 import com.possible_triangle.flightlib.api.IJetpack.Context
 import com.possible_triangle.flightlib.api.sources.CuriosSource
 import com.possible_triangle.flightlib.api.sources.EquipmentSource
-import com.simibubi.create.content.equipment.armor.BacktankItem
-import com.simibubi.create.content.equipment.armor.BacktankUtil
-import com.simibubi.create.foundation.item.LayeredArmorItem
-import com.simibubi.create.foundation.particle.AirParticleData
-import com.tterrag.registrate.util.entry.ItemEntry
-import net.minecraft.core.Holder
+import com.zurrtum.create.content.equipment.armor.BacktankItem
+import com.zurrtum.create.content.equipment.armor.BacktankUtil
+import com.zurrtum.create.foundation.item.LayeredArmorItem
+import com.zurrtum.create.infrastructure.particle.AirParticleData
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleTypes
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.entity.EquipmentSlot
-import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.item.ArmorMaterial
-import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.enchantment.Enchantment
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.phys.Vec3
-import java.util.*
 
+// 26.1 port: Create Fly's BacktankItem is a BlockItem carrying an equippable component (armour material, slot and
+// equipment asset come from AllArmorMaterials.chest(...) in CJItems), instead of an ArmorItem plus placeable item.
+// Enchantment filtering moved to CJContent (Fabric EnchantmentEvents).
 open class JetpackItem(
+    block: Block,
     properties: Properties,
-    material: Holder<ArmorMaterial>,
-    texture: ResourceLocation,
-    blockItem: ItemEntry<BacktankBlockItem>,
-) : BacktankItem(
-        material,
-        properties,
-        texture,
-        blockItem,
-    ),
+) : BacktankItem(block, properties),
     IJetpack {
     override fun hoverSpeed(context: Context): Double = Configs.SERVER.hoverSpeed
 
@@ -88,11 +78,6 @@ open class JetpackItem(
         return air >= cost
     }
 
-    override fun supportsEnchantment(
-        stack: ItemStack,
-        enchantment: Holder<Enchantment>,
-    ): Boolean = super.supportsEnchantment(stack, enchantment) && Configs.SERVER.enchantments.isAllowed(enchantment)
-
     override fun createParticles(): ParticleOptions =
         if (Configs.CLIENT.spawnSnowParticles) {
             ParticleTypes.SNOWFLAKE
@@ -103,24 +88,11 @@ open class JetpackItem(
     override fun heightAboveGroundLimit(context: Context): Int? = Configs.SERVER.heightAboveGroundLimit
 
     class Layered(
+        block: Block,
         properties: Properties,
-        material: Holder<ArmorMaterial>,
-        texture: ResourceLocation,
-        blockItem: ItemEntry<BacktankBlockItem>,
-    ) : JetpackItem(properties, material, texture, blockItem),
+        private val layer: Identifier,
+    ) : JetpackItem(block, properties),
         LayeredArmorItem {
-        override fun getArmorTextureLocation(
-            entity: LivingEntity?,
-            slot: EquipmentSlot?,
-            stack: ItemStack?,
-            layer: Int,
-        ): String =
-            String.format(
-                Locale.ROOT,
-                "%s:textures/models/armor/%s_layer_%d.png",
-                textureLoc.namespace,
-                textureLoc.path,
-                layer,
-            )
+        override fun getLayerTexture(): Identifier = layer
     }
 }

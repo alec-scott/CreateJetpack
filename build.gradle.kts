@@ -1,107 +1,75 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    id("com.possible-triangle.neoforge")
+    id("net.fabricmc.fabric-loom") version "1.17.20"
+    kotlin("jvm") version "2.4.21"
 }
 
-withKotlin()
+val p = { key: String -> providers.gradleProperty(key).get() }
+val javaVersion = p("java_version").toInt()
 
-neoforge {
-    dataGen()
-}
-
-base {
-    archivesName = "${mod.id.get()}-forge-${mod.version.get()}"
-}
+version = "${p("mod_version")}+mc${p("minecraft_version")}-fabric.${p("port_build")}"
+group = p("maven_group")
+base { archivesName = "create_jetpack-fabric" }
 
 repositories {
-    maven {
-        url = uri("https://maven.blamejared.com/")
-        content {
-            includeGroup("mezz.jei")
-        }
+    // Flight Lib 26.1 port: publishToMavenLocal from ../FlightLib (branch 26.1-fabric)
+    mavenLocal {
+        content { includeGroup("com.possible-triangle") }
     }
-    maven {
-        url = uri("https://mvn.devos.one/snapshots")
-        content {
-            includeGroup("com.tterrag.registrate")
-        }
-    }
-    maven {
-        url = uri("https://maven.createmod.net")
-        content {
-            includeGroup("com.simibubi.create")
-            includeGroup("net.createmod.ponder")
-            includeGroup("dev.engine-room.flywheel")
-        }
-    }
-    maven {
-        url = uri("https://maven.theillusivec4.top/")
-        content {
-            includeGroup("com.illusivesoulworks.caelus")
-            includeGroup("top.theillusivec4.curios")
-        }
-    }
-    nexus {
-        content {
-            includeGroup("com.possible-triangle")
-        }
-    }
-    maven {
-        url = uri("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/")
-        content {
-            includeGroup("fuzs.forgeconfigapiport")
-        }
-    }
+    mavenCentral()
+    maven("https://maven.fabricmc.net/")
+    maven("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/")
+}
+
+sourceSets.main {
+    // Upstream's committed datagen output (Registrate datagen is not run in this port; see PORTING-26.1.md)
+    resources.srcDir("src/generated/resources")
+    resources.exclude(".cache/**", "META-INF/neoforge.mods.toml", "pack.mcmeta", "**/*.xcf")
 }
 
 dependencies {
-    modInclude(libs.flightlib.neoforge)
+    // 26.1 is unobfuscated: no mappings, and Loom no longer remaps.
+    minecraft("com.mojang:minecraft:${p("minecraft_version")}")
+    implementation("net.fabricmc:fabric-loader:${p("fabric_loader_version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${p("fabric_api_version")}")
+    implementation("net.fabricmc:fabric-language-kotlin:${p("fabric_kotlin_version")}")
+    implementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${p("forgeconfigapiport_version")}")
 
-    modImplementation(libs.registrate)
+    implementation(files(p("create_fly_jar")))
 
-    modImplementation(
-        variantOf(libs.create) {
-            classifier("slim")
-        },
-    ) {
-        isTransitive = false
-    }
-
-    modImplementation(libs.ponder)
-    modCompileOnly(libs.flywheel)
-
-    if (!env.isCI) {
-        modRuntimeOnly(libs.jei)
-
-        // Only here to test jetpack+elytra combination behaviour
-        modImplementation(libs.curios)
-        modRuntimeOnly(libs.caelus)
-        modRuntimeOnly(pack.modrinth.elytra.slot)
-        modRuntimeOnly(pack.modrinth.cold.sweat)
-    }
-
-    modCompileOnly(libs.flightlib.api)
-    modCompileOnly(libs.flightlib.neoforge.api)
+    implementation("com.possible-triangle:flightlib-fabric:${p("flightlib_version")}")
+    include("com.possible-triangle:flightlib-fabric:${p("flightlib_version")}")
 }
 
-tasks.withType<Jar> {
-    exclude("screenshots")
+tasks.processResources {
+    val props = mapOf(
+        "version" to project.version,
+        "minecraft_version" to p("minecraft_version"),
+        "fabric_loader_version" to p("fabric_loader_version"),
+        "fabric_kotlin_version" to p("fabric_kotlin_version"),
+        "forgeconfigapiport_version" to p("forgeconfigapiport_version"),
+        "create_fly_version_range" to p("create_fly_version_range"),
+    )
+    inputs.properties(props)
+    filesMatching("fabric.mod.json") { expand(props) }
 }
 
-upload {
-    maven {
-        nexus()
-    }
-
-    forEach {
-        dependencies {
-            required("create")
-        }
-    }
-
-    modrinth {
-        syncBodyFromReadme()
-    }
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
+    withSourcesJar()
 }
 
-enableSonarQube()
-enableSpotless()
+kotlin {
+    jvmToolchain(javaVersion)
+    compilerOptions.jvmTarget = JvmTarget.fromTarget(javaVersion.toString())
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release = javaVersion
+    options.encoding = "UTF-8"
+}
+
+tasks.jar {
+    from("LICENSE.md") { rename { "LICENSE_create_jetpack.md" } }
+}

@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.possible_triangle.create_jetpack.mixins",
+  "compatibilityLevel": "JAVA_25",
+  "minVersion": "0.8",
+  "mixins": [
+    "MechanicalCraftingRecipeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

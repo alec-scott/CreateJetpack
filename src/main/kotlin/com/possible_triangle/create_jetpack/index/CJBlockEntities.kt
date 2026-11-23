@@ -1,36 +1,26 @@
 package com.possible_triangle.create_jetpack.index
 
-import com.possible_triangle.create_jetpack.CJContent.REGISTRATE
-import com.simibubi.create.AllPartialModels
-import com.simibubi.create.content.equipment.armor.BacktankBlockEntity
-import com.simibubi.create.content.equipment.armor.BacktankRenderer
-import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual
-import com.tterrag.registrate.builders.BlockEntityBuilder
-import com.tterrag.registrate.util.nullness.NonNullFunction
-import dev.engine_room.flywheel.lib.model.Models
-import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer
+import com.possible_triangle.create_jetpack.CJConstants.MOD_ID
+import com.possible_triangle.create_jetpack.world.block.JetpackBlockEntity
+import com.zurrtum.create.AllBlockEntityTypes
+import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.Identifier
+import net.minecraft.world.level.block.entity.BlockEntityType
 
 object CJBlockEntities {
-    val JETPACK_BLOCK_ENTITY =
-        REGISTRATE
-            .blockEntity("jetpack", BlockEntityBuilder.BlockEntityFactory(::BacktankBlockEntity))
-            .visual {
-                SimpleBlockEntityVisualizer.Factory { ctx, be, f ->
-                    val model =
-                        Models.partial(
-                            if (be.blockState.`is`(CJBlocks.NETHERITE_JETPACK)) {
-                                AllPartialModels.NETHERITE_BACKTANK_SHAFT
-                            } else {
-                                AllPartialModels.COPPER_BACKTANK_SHAFT
-                            },
-                        )
-                    SingleAxisRotatingVisual(ctx, be, f, model)
-                }
-            }.validBlocks(CJBlocks.JETPACK, CJBlocks.NETHERITE_JETPACK)
-            .renderer { NonNullFunction { BacktankRenderer(it) } }
-            .register()
+    @JvmField
+    val JETPACK_BLOCK_ENTITY: BlockEntityType<JetpackBlockEntity> =
+        Registry.register(
+            BuiltInRegistries.BLOCK_ENTITY_TYPE,
+            Identifier.fromNamespaceAndPath(MOD_ID, "jetpack"),
+            FabricBlockEntityTypeBuilder.create(::JetpackBlockEntity, CJBlocks.JETPACK, CJBlocks.NETHERITE_JETPACK).build(),
+        )
 
     internal fun register() {
-        // Load this class
+        // Create Fly's BacktankBlockEntity constructor always passes create:backtank to BlockEntity, which validates
+        // the block state against it. JetpackBlockEntity reports its own type afterwards (see there).
+        CJBlocks.all.forEach { AllBlockEntityTypes.BACKTANK.addValidBlock(it) }
     }
 }

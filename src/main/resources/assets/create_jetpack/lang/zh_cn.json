@@ -12,7 +12,6 @@
   "item.create_jetpack.jetpack.tooltip.control3": "按下 [G]",
   "item.create_jetpack.jetpack.tooltip.control4": "按下 [H]",
   "item.create_jetpack.jetpack.tooltip.summary": "允许使用压缩空气进行飞行",
-  "item.create_jetpack.jetpack_placeable": "可放置喷气背包",
   "item.create_jetpack.netherite_jetpack": "下界合金喷气背包",
   "item.create_jetpack.netherite_jetpack.tooltip": "",
   "item.create_jetpack.netherite_jetpack.tooltip.action1": "向上飞",
@@ -24,6 +23,5 @@
   "item.create_jetpack.netherite_jetpack.tooltip.control3": "按下 [G]",
   "item.create_jetpack.netherite_jetpack.tooltip.control4": "按下 [H]",
   "item.create_jetpack.netherite_jetpack.tooltip.summary": "允许使用压缩空气进行飞行",
-  "item.create_jetpack.netherite_jetpack_placeable": "可放置下界合金喷气背包",
-  "key.categories.movement.jetpack": "机械动力：喷气背包"
+  "key.category.flightlib.jetpack": "机械动力：喷气背包"
 }

@@ -1,17 +1,19 @@
 package com.possible_triangle.create_jetpack.config
 
 import com.possible_triangle.create_jetpack.CJConstants
+import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry
+import fuzs.forgeconfigapiport.fabric.api.v5.ModConfigEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
-import net.neoforged.bus.api.IEventBus
-import net.neoforged.fml.ModContainer
 import net.neoforged.fml.config.ModConfig
-import net.neoforged.fml.event.config.ModConfigEvent
 import net.neoforged.neoforge.common.ModConfigSpec
-import net.neoforged.neoforge.event.entity.player.PlayerEvent
-import net.neoforged.neoforge.network.PacketDistributor
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
-import thedarkcolour.kotlinforforge.neoforge.forge.FORGE_BUS
 
+// 26.1 Fabric port: configs go through Forge Config API Port (same ModConfigSpec API as upstream), and the
+// NeoForge events / PacketDistributor are replaced by their Fabric equivalents.
 object Configs {
     @Suppress("ktlint:standard:property-naming")
     var SERVER_SPEC: ModConfigSpec
@@ -34,6 +36,8 @@ object Configs {
     var CLIENT: ClientConfig
         private set
 
+    private var server: MinecraftServer? = null
+
     init {
         with(ModConfigSpec.Builder().configure { ServerConfig(it) }) {
             LOCAL_SERVER = left
@@ -47,43 +51,31 @@ object Configs {
     }
 
     private fun syncConfig() {
+        val players = server?.playerList?.players ?: return
         CJConstants.LOGGER.debug("Sending server config all players")
-        PacketDistributor.sendToAllPlayers(SyncConfigMessage(LOCAL_SERVER))
+        players.forEach { ServerPlayNetworking.send(it, SyncConfigMessage(LOCAL_SERVER)) }
     }
 
     private fun syncConfig(player: ServerPlayer) {
         CJConstants.LOGGER.debug("Sending server config to ${player.scoreboardName}")
-        PacketDistributor.sendToPlayer(player, SyncConfigMessage(LOCAL_SERVER))
+        ServerPlayNetworking.send(player, SyncConfigMessage(LOCAL_SERVER))
     }
 
     @JvmStatic
-    fun register(
-        container: ModContainer,
-        modBus: IEventBus,
-    ) {
-        container.registerConfig(ModConfig.Type.COMMON, SERVER_SPEC)
-        container.registerConfig(ModConfig.Type.CLIENT, CLIENT_SPEC)
+    fun register() {
+        ConfigRegistry.INSTANCE.register(CJConstants.MOD_ID, ModConfig.Type.COMMON, SERVER_SPEC)
+        ConfigRegistry.INSTANCE.register(CJConstants.MOD_ID, ModConfig.Type.CLIENT, CLIENT_SPEC)
 
-        modBus.addListener(Configs.Network::register)
+        PayloadTypeRegistry.clientboundPlay().register(SyncConfigMessage.TYPE.type(), SyncConfigMessage.TYPE.codec())
 
-        FORGE_BUS.addListener { event: PlayerEvent.PlayerLoggedInEvent ->
-            val player = event.entity
-            if (player is ServerPlayer) syncConfig(player)
-        }
+        ServerLifecycleEvents.SERVER_STARTED.register { server = it }
+        ServerLifecycleEvents.SERVER_STOPPED.register { server = null }
 
-        modBus.addListener { event: ModConfigEvent.Reloading ->
-            if (event.config.type == ModConfig.Type.COMMON) {
+        ServerPlayConnectionEvents.JOIN.register { listener, _, _ -> syncConfig(listener.player) }
+
+        ModConfigEvents.reloading(CJConstants.MOD_ID).register { config ->
+            if (config.type == ModConfig.Type.COMMON) {
                 syncConfig()
-            }
-        }
-    }
-
-    object Network {
-        internal fun register(event: RegisterPayloadHandlersEvent) {
-            val registrar = event.registrar("2.0")
-
-            registrar.playToClient(SyncConfigMessage.TYPE.type(), SyncConfigMessage.TYPE.codec()) { message, _ ->
-                message.handle()
             }
         }
     }

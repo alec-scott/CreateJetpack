@@ -9,24 +9,12 @@
     " C C "
   ],
   "key": {
-    "E": {
-      "item": "minecraft:elytra"
-    },
-    "C": {
-      "item": "create:chute"
-    },
-    "X": {
-      "item": "create:copper_backtank"
-    },
-    "S": {
-      "item": "create:shaft"
-    },
-    "Y": {
-      "item": "create:precision_mechanism"
-    },
-    "P": {
-      "tag": "c:plates/brass"
-    }
+    "E": "minecraft:elytra",
+    "C": "create:chute",
+    "X": "create:copper_backtank",
+    "S": "create:shaft",
+    "Y": "create:precision_mechanism",
+    "P": "#c:plates/brass"
   },
   "result": {
     "id": "create_jetpack:jetpack"

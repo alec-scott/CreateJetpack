@@ -12,7 +12,6 @@
   "item.create_jetpack.jetpack.tooltip.control3": "Maintenir [G]",
   "item.create_jetpack.jetpack.tooltip.control4": "Maintenir [H]",
   "item.create_jetpack.jetpack.tooltip.summary": "Permet la lévitation en utilisant de l'air pressurisé",
-  "item.create_jetpack.jetpack_placeable": "Jetpack plaçable",
   "item.create_jetpack.netherite_jetpack": "Jetpack en netherite",
   "item.create_jetpack.netherite_jetpack.tooltip": "",
   "item.create_jetpack.netherite_jetpack.tooltip.action1": "Voler vers le haut",
@@ -23,6 +22,5 @@
   "item.create_jetpack.netherite_jetpack.tooltip.control2": "Maintenir [Maj]",
   "item.create_jetpack.netherite_jetpack.tooltip.control3": "Maintenir [G]",
   "item.create_jetpack.netherite_jetpack.tooltip.control4": "Maintenir [H]",
-  "item.create_jetpack.netherite_jetpack.tooltip.summary": "Permet la lévitation en utilisant de l'air pressurisé",
-  "item.create_jetpack.netherite_jetpack_placeable": "Jetpack en netherite plaçable"
+  "item.create_jetpack.netherite_jetpack.tooltip.summary": "Permet la lévitation en utilisant de l'air pressurisé"
 }

@@ -1,11 +1,13 @@
 pluginManagement {
     repositories {
+        maven("https://maven.fabricmc.net/")
+        mavenCentral()
         gradlePluginPortal()
-        mavenLocal()
     }
 }
 
 plugins {
-    id("com.possible-triangle.helper") version ("1.4")
-    id("com.possible-triangle.packwiz") version ("1.4.+")
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+
+rootProject.name = "create_jetpack"

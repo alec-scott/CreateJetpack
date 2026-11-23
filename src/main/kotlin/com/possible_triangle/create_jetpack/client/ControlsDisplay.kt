@@ -1,28 +1,28 @@
 package com.possible_triangle.create_jetpack.client
 
-import com.mojang.blaze3d.systems.RenderSystem
 import com.possible_triangle.create_jetpack.CJConstants.MOD_ID
 import com.possible_triangle.create_jetpack.config.Configs
 import com.possible_triangle.flightlib.api.ControlType
 import com.possible_triangle.flightlib.api.FlightKey
 import com.possible_triangle.flightlib.api.IFlightApi
 import com.possible_triangle.flightlib.api.IJetpack
-import com.simibubi.create.content.equipment.armor.BacktankUtil
+import com.zurrtum.create.content.equipment.armor.BacktankUtil
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
 import net.minecraft.client.DeltaTracker
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.gui.LayeredDraw
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.phys.Vec2
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers
 import kotlin.math.ceil
 
-object ControlsDisplay : LayeredDraw.Layer {
-    private val controls = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/controls.png")
-    private val airIndicator = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/air_indicator.png")
+// 26.1 port: a Fabric HUD element (upstream: NeoForge gui layer above the hotbar). The GUI pose is a 2D matrix stack
+// now, blits take a render pipeline (which also handles blending) and text colours need an alpha channel.
+object ControlsDisplay : HudElement {
+    private val controls = Identifier.fromNamespaceAndPath(MOD_ID, "textures/gui/controls.png")
+    private val airIndicator = Identifier.fromNamespaceAndPath(MOD_ID, "textures/gui/air_indicator.png")
 
     private fun spritePos(index: Int): Vec2 =
         Vec2(
@@ -36,17 +36,8 @@ object ControlsDisplay : LayeredDraw.Layer {
             FlightKey.TOGGLE_HOVER to { it.jetpack.hoverType(it) },
         )
 
-    @JvmStatic
-    fun register(event: RegisterGuiLayersEvent) {
-        event.registerAbove(
-            VanillaGuiLayers.HOTBAR,
-            ResourceLocation.fromNamespaceAndPath(MOD_ID, "jetpack_controls"),
-            this,
-        )
-    }
-
-    override fun render(
-        graphics: GuiGraphics,
+    override fun extractRenderState(
+        graphics: GuiGraphicsExtractor,
         tracker: DeltaTracker,
     ) {
         val mc = Minecraft.getInstance()
@@ -91,8 +82,8 @@ object ControlsDisplay : LayeredDraw.Layer {
             x: Int,
         ) {
             val sprite = spritePos(index)
-            graphics.pose().scale(scale, scale, scale)
-            graphics.blit(controls, startX + x, startY, 0, sprite.x, sprite.y, 16, 16, 32, 32)
+            graphics.pose().scale(scale, scale)
+            graphics.blit(RenderPipelines.GUI_TEXTURED, controls, startX + x, startY, sprite.x, sprite.y, 16, 16, 32, 32)
         }
 
         val engineActive = FlightKey.TOGGLE_ACTIVE.isPressed(player)
@@ -103,25 +94,24 @@ object ControlsDisplay : LayeredDraw.Layer {
                 .filterValues { getType -> getType(context) == ControlType.TOGGLE }
                 .keys
                 .mapIndexed { index, key ->
-                    graphics.pose().pushPose()
+                    graphics.pose().pushMatrix()
 
                     val active = key.isPressed(player)
                     renderSprite(index + if (active) 0 else 2, spriteWidth * index)
 
                     val textScale = 0.5F
-                    graphics.pose().scale(textScale, textScale, textScale)
+                    graphics.pose().scale(textScale, textScale)
                     val textMargin = (startX + 8 + spriteWidth * index) * (1 / textScale)
                     val text = Component.translatable("overlay.flightlib.control.${key.name.lowercase()}")
-                    val color = if (active) 0xFFFFFF else 0xBBBBBB
-                    graphics.drawCenteredString(mc.font, text, textMargin.toInt(), startY * 2 + 36, color)
-                    graphics.pose().popPose()
+                    val color = if (active) 0xFFFFFFFF.toInt() else 0xFFBBBBBB.toInt()
+                    graphics.centeredText(mc.font, text, textMargin.toInt(), startY * 2 + 36, color)
+                    graphics.pose().popMatrix()
                 }.count()
 
         if (engineActive) {
-            graphics.pose().pushPose()
+            graphics.pose().pushMatrix()
 
-            graphics.pose().scale(scale, scale, scale)
-            RenderSystem.enableBlend()
+            graphics.pose().scale(scale, scale)
 
             val barWidth = 5
 
@@ -131,6 +121,7 @@ object ControlsDisplay : LayeredDraw.Layer {
                 spriteOffset: Int = 0,
             ) {
                 graphics.blit(
+                    RenderPipelines.GUI_TEXTURED,
                     airIndicator,
                     startX + spriteWidth * renderedIcons,
                     startY + (19 - barHeight) - spriteOffset,
@@ -157,8 +148,7 @@ object ControlsDisplay : LayeredDraw.Layer {
                 renderBar(0, barHeight, 1)
             }
 
-            RenderSystem.disableBlend()
-            graphics.pose().popPose()
+            graphics.pose().popMatrix()
         }
     }
 }

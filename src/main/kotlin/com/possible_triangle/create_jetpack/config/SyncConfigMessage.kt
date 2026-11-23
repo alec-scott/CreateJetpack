@@ -4,7 +4,7 @@ import com.possible_triangle.create_jetpack.CJConstants
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 class SyncConfigMessage(
     private val config: IServerConfig,
@@ -14,7 +14,7 @@ class SyncConfigMessage(
     companion object {
         val TYPE =
             CustomPacketPayload.TypeAndCodec(
-                CustomPacketPayload.Type(ResourceLocation.fromNamespaceAndPath(CJConstants.MOD_ID, "sync_config")),
+                CustomPacketPayload.Type(Identifier.fromNamespaceAndPath(CJConstants.MOD_ID, "sync_config")),
                 StreamCodec.of(SyncConfigMessage::encode, SyncConfigMessage::decode),
             )
 

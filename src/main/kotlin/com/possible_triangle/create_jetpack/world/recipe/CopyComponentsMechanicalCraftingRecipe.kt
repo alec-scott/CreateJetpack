@@ -1,76 +1,56 @@
 package com.possible_triangle.create_jetpack.world.recipe
 
-import com.mojang.serialization.MapCodec
-import com.possible_triangle.create_jetpack.index.CJRecipeTypes
-import com.simibubi.create.content.equipment.armor.BacktankItem
-import com.simibubi.create.content.kinetics.crafter.MechanicalCraftingRecipe
-import net.minecraft.core.HolderLookup
-import net.minecraft.network.RegistryFriendlyByteBuf
-import net.minecraft.network.codec.StreamCodec
+import com.google.common.collect.MapMaker
+import com.zurrtum.create.content.equipment.armor.BacktankItem
+import com.zurrtum.create.content.kinetics.crafter.MechanicalCraftingRecipe
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.crafting.CraftingBookCategory
 import net.minecraft.world.item.crafting.CraftingInput
 import net.minecraft.world.item.crafting.RecipeSerializer
-import net.minecraft.world.item.crafting.ShapedRecipePattern
-import kotlin.math.min
+import java.util.Collections
 
-class CopyComponentsMechanicalCraftingRecipe(
-    group: String,
-    category: CraftingBookCategory,
-    pattern: ShapedRecipePattern,
-    recipeOutput: ItemStack,
-    acceptMirrored: Boolean,
-) : MechanicalCraftingRecipe(group, category, pattern, recipeOutput, acceptMirrored) {
-    override fun getSerializer(): RecipeSerializer<*> = CJRecipeTypes.COPY_NBT_MECHANICAL_CRAFTING_SERIALIZER.get()
+/**
+ * 26.1 port: Create Fly's MechanicalCraftingRecipe is a final record, so it cannot be subclassed as upstream did.
+ * Instead, this serializer reads a normal mechanical crafting recipe and remembers the instance; the
+ * MechanicalCraftingRecipeMixin then copies the backtank's components onto the result for remembered recipes.
+ * The recipe keeps Create's own type and serializer once loaded, so the mechanical crafter and recipe viewers
+ * treat it as an ordinary mechanical crafting recipe.
+ */
+object CopyComponentsMechanicalCraftingRecipe {
+    // Identity-based and weak: recipes from a previous datapack reload are dropped automatically
+    private val COPYING: MutableSet<MechanicalCraftingRecipe> =
+        Collections.newSetFromMap(MapMaker().weakKeys().makeMap())
 
-    private fun findUpgradable(container: CraftingInput): ItemStack? {
-        val width = min(container.width(), width)
-        for (x in 0 until width) {
-            for (y in 0 until min(container.height(), height)) {
-                val stack = container.getItem(x + y * width)
-                if (stack.item is BacktankItem) return stack
-            }
+    @JvmField
+    val SERIALIZER: RecipeSerializer<MechanicalCraftingRecipe> =
+        RecipeSerializer(
+            MechanicalCraftingRecipe.MAP_CODEC.xmap(::mark) { it },
+            MechanicalCraftingRecipe.STREAM_CODEC.map(::mark) { it },
+        )
+
+    private fun mark(recipe: MechanicalCraftingRecipe): MechanicalCraftingRecipe {
+        COPYING.add(recipe)
+        return recipe
+    }
+
+    @JvmStatic
+    fun copiesComponents(recipe: MechanicalCraftingRecipe) = recipe in COPYING
+
+    private fun findUpgradable(input: CraftingInput): ItemStack? {
+        for (i in 0 until input.size()) {
+            val stack = input.getItem(i)
+            if (stack.item is BacktankItem) return stack
         }
-
         return null
     }
 
-    override fun assemble(
-        container: CraftingInput,
-        registries: HolderLookup.Provider,
-    ): ItemStack {
-        val upgradeTarget = findUpgradable(container)
-        val upgraded = super.assemble(container, registries)
-        upgradeTarget?.let { upgraded.applyComponents(it.components) }
-        return upgraded
-    }
-
-    object Serializer : MechanicalCraftingRecipe.Serializer() {
-        private val CODEC: MapCodec<MechanicalCraftingRecipe> =
-            MechanicalCraftingRecipe.Serializer.CODEC.xmap(Serializer::from, Serializer::to)
-        private val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, MechanicalCraftingRecipe> =
-            MechanicalCraftingRecipe.Serializer.STREAM_CODEC.map(Serializer::from, Serializer::to)
-
-        private fun from(recipe: MechanicalCraftingRecipe): MechanicalCraftingRecipe =
-            CopyComponentsMechanicalCraftingRecipe(
-                recipe.group,
-                recipe.category(),
-                recipe.pattern,
-                recipe.getResultItem(null),
-                recipe.acceptsMirrored(),
-            )
-
-        private fun to(recipe: MechanicalCraftingRecipe): MechanicalCraftingRecipe =
-            MechanicalCraftingRecipe(
-                recipe.group,
-                recipe.category(),
-                recipe.pattern,
-                recipe.getResultItem(null),
-                recipe.acceptsMirrored(),
-            )
-
-        override fun codec() = CODEC
-
-        // override fun streamCodec() = STREAM_CODEC
+    @JvmStatic
+    fun copyComponents(
+        input: CraftingInput,
+        result: ItemStack,
+    ) {
+        // Upstream copied the whole component map. On 26.1 that map also carries item-defining prototype components
+        // (item model, equippable, attributes...), so only the stack's own changes (air, enchantments, name, ...) are
+        // copied, which is what upstream's copy amounted to on 1.21.1.
+        findUpgradable(input)?.let { result.applyComponents(it.componentsPatch) }
     }
 }

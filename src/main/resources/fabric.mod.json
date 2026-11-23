@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "create_jetpack",
+  "version": "${version}",
+  "name": "Create Jetpack",
+  "description": "Upgrade your backtank and utilize the pressurized air to fly",
+  "authors": [
+    "possible_triangle"
+  ],
+  "contributors": [
+    "26.1.2 Fabric port: alec-scott"
+  ],
+  "contact": {
+    "sources": "https://github.com/alec-scott/CreateJetpack",
+    "issues": "https://github.com/alec-scott/CreateJetpack/issues"
+  },
+  "license": "MIT (code), All Rights Reserved (assets)",
+  "icon": "assets/create_jetpack/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.possible_triangle.create_jetpack.FabricEntrypoint"
+    ],
+    "client": [
+      "com.possible_triangle.create_jetpack.FabricClientEntrypoint"
+    ]
+  },
+  "mixins": [
+    "create_jetpack.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=25",
+    "fabric-language-kotlin": ">=1.14.0",
+    "forgeconfigapiport": ">=${forgeconfigapiport_version}",
+    "create": "${create_fly_version_range}",
+    "flightlib": "*"
+  }
+}

@@ -1,7 +1,7 @@
 package com.possible_triangle.create_jetpack.config
 
 import net.minecraft.core.Holder
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.world.item.enchantment.Enchantment
 import net.neoforged.neoforge.common.ModConfigSpec
 import kotlin.collections.mapNotNull
@@ -82,8 +82,8 @@ data class EnchantmentConfig(
     val isBlacklist: Boolean,
 ) {
     fun isAllowed(enchantment: Holder<Enchantment>): Boolean {
-        val key = enchantment.key?.location() ?: return false
-        val contained = ids.mapNotNull(ResourceLocation::tryParse).contains(key)
+        val key = enchantment.unwrapKey().map { it.identifier() }.orElse(null) ?: return false
+        val contained = ids.mapNotNull(Identifier::tryParse).contains(key)
         return contained != isBlacklist
     }
 }
