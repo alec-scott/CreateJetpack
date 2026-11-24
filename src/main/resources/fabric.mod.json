@@ -28,6 +28,9 @@
   "mixins": [
     "create_jetpack.mixins.json"
   ],
+  "suggests": {
+    "trinkets": "*"
+  },
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
     "fabric-api": "*",

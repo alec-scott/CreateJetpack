@@ -1,5 +1,7 @@
 package com.possible_triangle.create_jetpack.client
 
+import com.possible_triangle.create_jetpack.client.compat.JetpackTrinketRenderer
+import net.fabricmc.loader.api.FabricLoader
 import com.possible_triangle.create_jetpack.CJConstants.MOD_ID
 import com.possible_triangle.create_jetpack.config.SyncConfigMessage
 import com.possible_triangle.create_jetpack.index.CJBlockEntities
@@ -32,6 +34,8 @@ object CJClient {
         // Create-style item descriptions (upstream: Registrate tooltip modifier factory)
         AllItemTooltips.register(CJItems.JETPACK)
         AllItemTooltips.register(CJItems.NETHERITE_JETPACK)
+
+        if (FabricLoader.getInstance().isModLoaded("trinkets")) JetpackTrinketRenderer.register()
 
         // As upstream: Create's backtank renderer, and a rotating shaft visual matching the jetpack's material
         AllBlockEntityRenders.visual(

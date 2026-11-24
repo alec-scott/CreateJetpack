@@ -58,8 +58,12 @@ Registrate datagen is not run: the committed `src/generated/resources` are used 
 - **In-game config screen**: upstream registered Create's catnip `BaseConfigScreen`. Create Fly has no config UI, so
   there is no screen. Decided 2026-11-24 (user): no screen; settings are edited in the server's
   `config/create_jetpack-common.toml` (synced to players), defaults kept for now. Client prefs stay in `-client.toml`.
-- **Curios / Trinkets slot**: Flight Lib's Trinkets compat is disabled until Trinkets has a 26.1.2 build (see Flight
-  Lib's PORTING-26.1.md). Jetpacks work in the chest slot.
+- **Trinkets slot** (2026-11-24): on Trinkets Updated 4.0.1 (Patbox, `eu.pb4.trinkets`, optional). Upstream only offered
+  an opt-in Curios datapack; here the jetpacks are tagged for `chest/back` out of the box (`data/trinkets/...`).
+  `JetpackItem.isValid` accepts `TrinketsSource` (upstream only accepted Curios, so its 1.20 Fabric Trinkets path never
+  flew). `compat/TrinketsCompat` adds a Create backtank supplier so air in Trinkets slots counts (cosmetic slots skipped),
+  and `client/compat/JetpackTrinketRenderer` draws the jetpack on the back like Create Fly's backtank layer (skipped
+  when a backtank or jetpack is in the chest slot).
 - Cold Sweat data files are kept (inert without Cold Sweat).
 
 ## Status

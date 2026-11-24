@@ -19,6 +19,7 @@ repositories {
     }
     mavenCentral()
     maven("https://maven.fabricmc.net/")
+    maven("https://maven.nucleoid.xyz/releases") { content { includeGroup("eu.pb4") } }
     maven("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/")
 }
 
@@ -40,6 +41,8 @@ dependencies {
 
     implementation("com.possible-triangle:flightlib-fabric:${p("flightlib_version")}")
     include("com.possible-triangle:flightlib-fabric:${p("flightlib_version")}")
+    // Optional: Trinkets Updated (26.1 continuation of Trinkets).
+    compileOnly("eu.pb4:trinkets:${p("trinkets_version")}")
 }
 
 tasks.processResources {

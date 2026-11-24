@@ -7,6 +7,7 @@ import com.possible_triangle.flightlib.api.IJetpack
 import com.possible_triangle.flightlib.api.IJetpack.Context
 import com.possible_triangle.flightlib.api.sources.CuriosSource
 import com.possible_triangle.flightlib.api.sources.EquipmentSource
+import com.possible_triangle.flightlib.api.sources.TrinketsSource
 import com.zurrtum.create.content.equipment.armor.BacktankItem
 import com.zurrtum.create.content.equipment.armor.BacktankUtil
 import com.zurrtum.create.foundation.item.LayeredArmorItem
@@ -68,6 +69,7 @@ open class JetpackItem(
         when (val source = context.source) {
             is EquipmentSource -> source.slot == EquipmentSlot.CHEST
             is CuriosSource -> true
+            is TrinketsSource -> true // 26.1 port: upstream only accepted Curios (NeoForge)
             else -> false
         }
 

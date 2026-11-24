@@ -1,6 +1,8 @@
 package com.possible_triangle.create_jetpack
 
+import com.possible_triangle.create_jetpack.compat.TrinketsCompat
 import com.possible_triangle.create_jetpack.config.Configs
+import net.fabricmc.loader.api.FabricLoader
 import com.possible_triangle.create_jetpack.index.CJBlockEntities
 import com.possible_triangle.create_jetpack.index.CJBlocks
 import com.possible_triangle.create_jetpack.index.CJItems
@@ -16,6 +18,7 @@ object CJContent {
         CJBlocks.register()
         CJItems.register()
         CJBlockEntities.register()
+        if (FabricLoader.getInstance().isModLoaded("trinkets")) TrinketsCompat.register()
         CJRecipeTypes.register()
 
         // Upstream (NeoForge) filtered enchantments through IItemExtension.supportsEnchantment
