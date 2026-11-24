@@ -56,8 +56,8 @@ Registrate datagen is not run: the committed `src/generated/resources` are used 
 ## Not ported / open questions
 
 - **In-game config screen**: upstream registered Create's catnip `BaseConfigScreen`. Create Fly has no config UI, so
-  there is no screen; the TOML files (`config/create_jetpack-common.toml`, `-client.toml`) work as normal. Waiting on
-  the user's decision.
+  there is no screen. Decided 2026-11-24 (user): no screen; settings are edited in the server's
+  `config/create_jetpack-common.toml` (synced to players), defaults kept for now. Client prefs stay in `-client.toml`.
 - **Curios / Trinkets slot**: Flight Lib's Trinkets compat is disabled until Trinkets has a 26.1.2 build (see Flight
   Lib's PORTING-26.1.md). Jetpacks work in the chest slot.
 - Cold Sweat data files are kept (inert without Cold Sweat).
