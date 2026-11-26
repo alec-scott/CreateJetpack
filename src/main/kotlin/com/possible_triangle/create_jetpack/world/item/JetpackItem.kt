@@ -74,10 +74,10 @@ open class JetpackItem(
         }
 
     override fun isUsable(context: Context): Boolean {
-        val tank = BacktankUtil.getAllWithAir(context.entity).firstOrNull() ?: return false
-        val air = BacktankUtil.getAir(tank)
+        // 26.1 port: upstream only checked the emptiest tank (Create sorts by air, lowest first), so a jetpack left on
+        // 1 air (hovering costs 1, climbing 2) blocked flight even with a full backtank worn. Check every tank.
         val cost = BacktankUtil.maxAirWithoutEnchants().toFloat() / secondsPerTank(FlightAction.UP)
-        return air >= cost
+        return BacktankUtil.getAllWithAir(context.entity).any { BacktankUtil.getAir(it) >= cost }
     }
 
     override fun createParticles(): ParticleOptions =

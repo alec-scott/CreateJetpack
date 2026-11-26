@@ -44,6 +44,9 @@ Registrate datagen is not run: the committed `src/generated/resources` are used 
   (sent on join and on config reload).
 - **HUD**: `ControlsDisplay` is a Fabric `HudElement` after the hotbar; rewritten for the 26.1 GUI API (2D pose stack,
   pipeline blits, alpha in text colours).
+- **Air check** (`JetpackItem.isUsable`): upstream only looked at the emptiest worn tank (Create sorts by air, lowest
+  first), so a jetpack left on 1 air (hover costs 1, climbing 2) blocked flight even with a full backtank worn. It now
+  accepts any worn tank with enough air for a climb tick (found in game 2026-11-26).
 - **Key category**: Flight Lib's key category lang key is now `key.category.flightlib.jetpack` (26.1 key categories);
   Create Jetpack's lang files override its name with "Create Jetpack" as upstream did.
 
@@ -71,4 +74,5 @@ Registrate datagen is not run: the committed `src/generated/resources` are used 
 - [x] Builds (Flight Lib and Create Jetpack).
 - [x] Dedicated server boot clean with the test server's mods (2026-11-24); `/reload` clean; blocks place and save
       as `create_jetpack:jetpack`; the block loot keeps stored air (`create:banktank_air`).
-- [ ] Client test: checklist in `../port-testing/create-jetpack.md`.
+- [x] Client test run by Claude 2026-11-26 (results in `../port-testing/create-jetpack.md`); a few UI-only checks left
+      for the user.
